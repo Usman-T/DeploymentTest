@@ -4,6 +4,16 @@ const typeDefs = require("../src/typeDefs");
 const User = require("../src/models/user");
 const jwt = require("jsonwebtoken");
 
+const MONGODB_URI = process.env.MONGODB_URI;
+
+mongoose
+  .connect(MONGODB_URI)
+  .then(() => {
+    console.log("connected to MongoDB");
+  })
+  .catch((error) => {
+    console.log("error connection to MongoDB:", error.message);
+  });
 
 const server = new ApolloServer({
   typeDefs,
