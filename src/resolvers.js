@@ -1,3 +1,11 @@
+const { GraphQLError } = require("graphql");
+const User = require("./models/user");
+const Roadmap = require("./models/roadmap");
+const Section = require("./models/section");
+const Upcoming = require("./models/upcoming");
+const jwt = require("jsonwebtoken");
+const bcrypt = require("bcryptjs");
+
 const resolvers = {
   Query: {
     me: (root, args, context) => {

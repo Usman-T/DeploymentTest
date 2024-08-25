@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 
-const schema = mongoose.schema({
+const schema = mongoose.Schema({
   title: {
     type: String,
     required: true,
@@ -9,7 +9,6 @@ const schema = mongoose.schema({
     type: String,
     required: true,
   },
-
   image: {
     type: String,
     required: true,
