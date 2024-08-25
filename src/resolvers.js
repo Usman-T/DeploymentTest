@@ -5,6 +5,7 @@ const Section = require("./models/section");
 const Upcoming = require("./models/upcoming");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
+const upcoming = require("./models/upcoming");
 
 const resolvers = {
   Query: {
@@ -117,6 +118,28 @@ const resolvers = {
       });
 
       return roadmapToSave.save();
+    },
+    createUpcomingRoadmap: async (root, args, context) => {
+      const { title, description, image } = args;
+      const currentUser = context.currentUser;
+
+      if (!currentUser || !currentUser.isAdmin) {
+        throw new GraphQLError("Only admins can create roadmaps");
+      }
+
+      if (!title || !description || !image) {
+        throw new GraphQLError(
+          "All fields are required and sections cannot be empty"
+        );
+      }
+
+      const upcomingRoadmapToSave = new Upcoming({
+        title,
+        description,
+        image,
+      });
+
+      return upcomingRoadmapToSave.save();
     },
     publishRoadmap: async (root, args, context) => {
       const { roadmapId } = args;
