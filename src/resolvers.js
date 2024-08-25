@@ -5,6 +5,7 @@ const Section = require("./models/section");
 const Upcoming = require("./models/upcoming");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
+const upcoming = require("./models/upcoming");
 
 const resolvers = {
   Query: {
