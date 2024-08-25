@@ -87,7 +87,7 @@ const resolvers = {
       return { value: jwt.sign(userForToken, process.env.JWT_SECRET) };
     },
     createRoadmap: async (root, args, context) => {
-      const { title, description, image, sections, draft = true } = args;
+      const { title, description, image, sections, draft } = args;
       const currentUser = context.currentUser;
 
       if (!currentUser || !currentUser.isAdmin) {
@@ -117,6 +117,28 @@ const resolvers = {
       });
 
       return roadmapToSave.save();
+    },
+    createUpcomingRoadmap: async (root, args, context) => {
+      const { title, description, image } = args;
+      const currentUser = context.currentUser;
+
+      if (!currentUser || !currentUser.isAdmin) {
+        throw new GraphQLError("Only admins can create roadmaps");
+      }
+
+      if (!title || !description || !image) {
+        throw new GraphQLError(
+          "All fields are required and sections cannot be empty"
+        );
+      }
+
+      const upcomingRoadmapToSave = new Upcoming({
+        title,
+        description,
+        image,
+      });
+
+      return upcomingRoadmapToSave.save();
     },
     publishRoadmap: async (root, args, context) => {
       const { roadmapId } = args;
