@@ -76,12 +76,12 @@ type Mutation {
     sectionId: ID!
   ): User
 }
-
+  
 input SectionInput {
-  title: String!
-  content: String!
-  description: String!
-  images: [String]!
+  title: String
+  content: String
+  images: [String]
+  description: String
 }
 `;
 
