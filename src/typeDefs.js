@@ -17,7 +17,7 @@ type Section {
   content: String
   images: [String]
   description: String
-  id: ID
+  id: ID!
 }
 
 type Roadmap {
@@ -65,7 +65,7 @@ type Mutation {
     draft: Boolean
   ): Roadmap
   createUpcomingRoadmap(
-    title: Stirng!
+    title: String!
     description: String!
     image: String!
   ): Upcoming
@@ -85,4 +85,4 @@ input SectionInput {
 }
 `;
 
-module.exports = typeDefs
+module.exports = typeDefs;
