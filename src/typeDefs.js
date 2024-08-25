@@ -25,6 +25,14 @@ type Roadmap {
   description: String!
   image: String!
   sections: [Section]!
+  draft: Boolean!
+  id: ID!
+}
+
+type Upcoming {
+  title: String!
+  description: String!
+  image: String!
   id: ID!
 }
 
@@ -35,7 +43,8 @@ type Token {
 type Query {
   me: User
   allUsers: [User]
-  allRoadmaps: [Roadmap]
+  allRoadmaps(includeDrafts: Boolean): [Roadmap]
+  allUpcomingRoadmaps: [Upcoming]
 }
 
 type Mutation {
@@ -53,7 +62,14 @@ type Mutation {
     description: String!
     image: String!
     sections: [SectionInput!]!
+    draft: Boolean
   ): Roadmap
+  createUpcomingRoadmap(
+    title: Stirng!
+    description: String!
+    image: String!
+  ): Upcoming
+  publishRoadmap(roadmapId: ID!): Roadmap
   enrollUser(roadmapId: ID!): User
   completeSection(
     roadmapId: ID!
@@ -69,4 +85,4 @@ input SectionInput {
 }
 `;
 
-module.exports = typeDefs;
+module.exports = typeDefs

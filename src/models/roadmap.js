@@ -10,6 +10,7 @@ const roadmapSchema = new mongoose.Schema({
       ref: "Section",
     },
   ],
+  draft: { type: Boolean, default: true },
 });
 
 module.exports = mongoose.model("Roadmap", roadmapSchema);

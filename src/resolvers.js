@@ -1,10 +1,3 @@
-const { GraphQLError } = require("graphql");
-const User = require("./models/user");
-const Roadmap = require("./models/roadmap");
-const Section = require("./models/section");
-const jwt = require("jsonwebtoken");
-const bcrypt = require("bcryptjs");
-
 const resolvers = {
   Query: {
     me: (root, args, context) => {
@@ -13,7 +6,6 @@ const resolvers = {
       }
       return context.currentUser;
     },
-
     allUsers: async () => {
       return User.find({}).populate({
         path: "progress.roadmap",
@@ -22,8 +14,13 @@ const resolvers = {
         },
       });
     },
-    allRoadmaps: async () => {
-      return Roadmap.find({}).populate("sections");
+    allRoadmaps: async (root, args) => {
+      const { includeDrafts } = args;
+      const filter = includeDrafts ? {} : { draft: false };
+      return Roadmap.find(filter).populate("sections");
+    },
+    allUpcomingRoadmaps: async () => {
+      return Upcoming.find({});
     },
   },
   Mutation: {
@@ -82,15 +79,23 @@ const resolvers = {
       return { value: jwt.sign(userForToken, process.env.JWT_SECRET) };
     },
     createRoadmap: async (root, args, context) => {
-      const { title, description, image, sections } = args;
+      const { title, description, image, sections, draft = true } = args;
       const currentUser = context.currentUser;
 
       if (!currentUser || !currentUser.isAdmin) {
         throw new GraphQLError("Only admins can create roadmaps");
       }
 
-      if (!title || !description || !image || !sections || sections.length === 0) {
-        throw new GraphQLError("All fields are required and sections cannot be empty");
+      if (
+        !title ||
+        !description ||
+        !image ||
+        !sections ||
+        sections.length === 0
+      ) {
+        throw new GraphQLError(
+          "All fields are required and sections cannot be empty"
+        );
       }
 
       const sectionsToCreate = await Section.insertMany(sections);
@@ -99,10 +104,31 @@ const resolvers = {
         title,
         description,
         image,
-        sections: sectionsToCreate.map(section => section._id),
+        sections: sectionsToCreate.map((section) => section._id),
+        draft,
       });
 
       return roadmapToSave.save();
+    },
+    publishRoadmap: async (root, args, context) => {
+      const { roadmapId } = args;
+      const currentUser = context.currentUser;
+
+      if (!currentUser || !currentUser.isAdmin) {
+        throw new GraphQLError("Only admins can publish roadmaps");
+      }
+
+      const roadmap = await Roadmap.findById(roadmapId);
+      if (!roadmap) {
+        throw new GraphQLError("Roadmap not found");
+      }
+
+      if (!roadmap.draft) {
+        throw new GraphQLError("Roadmap is already published");
+      }
+
+      roadmap.draft = false;
+      return roadmap.save();
     },
     enrollUser: async (root, args, context) => {
       const { roadmapId } = args;
@@ -115,6 +141,10 @@ const resolvers = {
       const roadmap = await Roadmap.findById(roadmapId);
       if (!roadmap) {
         throw new GraphQLError("Roadmap not found");
+      }
+
+      if (roadmap.draft) {
+        throw new GraphQLError("Cannot enroll in a draft roadmap");
       }
 
       const user = await User.findById(currentUser.id);
@@ -172,7 +202,7 @@ const resolvers = {
       }
 
       enrolledRoadmap.completedSections.push(sectionId);
-      user.points = user.points + 10
+      user.points = user.points + 10;
 
       return user.save();
     },
@@ -180,12 +210,14 @@ const resolvers = {
   User: {
     id: (root) => root._id.toString(),
     progress: async (root) => {
-      const populatedUser = await User.findById(root._id).populate({
-        path: "progress.roadmap",
-        populate: {
-          path: "sections",
-        },
-      }).populate('progress.completedSections')
+      const populatedUser = await User.findById(root._id)
+        .populate({
+          path: "progress.roadmap",
+          populate: {
+            path: "sections",
+          },
+        })
+        .populate("progress.completedSections");
       return populatedUser.progress;
     },
   },
