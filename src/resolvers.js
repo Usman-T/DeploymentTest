@@ -4,7 +4,7 @@ const Roadmap = require("./models/roadmap");
 const Section = require("./models/section");
 const Upcoming = require("./models/upcoming");
 const jwt = require("jsonwebtoken");
-const enrolledStudents = require("enrolled");
+const enrolledStudents = require("./enrolled");
 const bcrypt = require("bcryptjs");
 
 const resolvers = {
