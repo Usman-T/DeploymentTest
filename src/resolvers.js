@@ -44,25 +44,31 @@ const resolvers = {
         throw new GraphQLError("Username already exists");
       }
 
-      const saltRounds = 10;
-      const passwordHash = await bcrypt.hash(password, saltRounds);
-
-      const user = new User({
-        username,
-        passwordHash,
-        isAdmin: isAdmin || false,
-        progress: [],
-      });
-
-      return user.save().catch((error) => {
-        throw new GraphQLError("Creating the user failed", {
-          extensions: {
-            code: "BAD_USER_INPUT",
-            invalidArgs: args.username,
-            error,
-          },
+      if (enrolled.includes(username)) {
+        const saltRounds = 10;
+        const passwordHash = await bcrypt.hash(password, saltRounds);
+  
+        const user = new User({
+          username,
+          passwordHash,
+          isAdmin: isAdmin || false,
+          progress: [],
         });
-      });
+  
+        return user.save().catch((error) => {
+          throw new GraphQLError("Creating the user failed", {
+            extensions: {
+              code: "BAD_USER_INPUT",
+              invalidArgs: args.username,
+              error,
+            },
+          });
+        });
+      }else {
+        throw new GraphQLError("Username not added to system")
+      }
+
+
     },
     login: async (root, args) => {
       const { username, password } = args;
