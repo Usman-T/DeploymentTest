@@ -4,6 +4,7 @@ const Roadmap = require("./models/roadmap");
 const Section = require("./models/section");
 const Upcoming = require("./models/upcoming");
 const jwt = require("jsonwebtoken");
+const enrolledStudents = require("enrolled");
 const bcrypt = require("bcryptjs");
 
 const resolvers = {
@@ -44,17 +45,17 @@ const resolvers = {
         throw new GraphQLError("Username already exists");
       }
 
-      if (enrolled.includes(username)) {
+      if (enrolledStudents.includes(username)) {
         const saltRounds = 10;
         const passwordHash = await bcrypt.hash(password, saltRounds);
-  
+
         const user = new User({
           username,
           passwordHash,
           isAdmin: isAdmin || false,
           progress: [],
         });
-  
+
         return user.save().catch((error) => {
           throw new GraphQLError("Creating the user failed", {
             extensions: {
@@ -64,11 +65,9 @@ const resolvers = {
             },
           });
         });
-      }else {
-        throw new GraphQLError("Username not added to system")
+      } else {
+        throw new GraphQLError("Username not added to system");
       }
-
-
     },
     login: async (root, args) => {
       const { username, password } = args;
