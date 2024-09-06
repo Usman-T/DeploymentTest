@@ -1,16 +1,15 @@
 const mongoose = require("mongoose");
 
-const module = mongoose.Schema({
+const moduleSchema = new mongoose.Schema({
   title: String,
   content: String,
-  resources: [String],
 });
 
 const sectionSchema = new mongoose.Schema({
   title: { type: String, required: true },
   learningObjectives: { type: String },
   modules: {
-    type: [module.section.schema],
+    type: [moduleSchema],
   },
   description: { type: String, required: true },
   images: [{ type: String }],

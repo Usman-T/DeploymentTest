@@ -111,9 +111,23 @@ const resolvers = {
         );
       }
 
+      // Map through sections and save them
       const sectionsToCreate = await Promise.all(
         sections.map(async (section) => {
-          const newSection = new Section(section);
+          const { modules } = section;
+
+          // Save each module to be used inside the section
+          const modulesToSave = modules.map((module) => ({
+            title: module.title,
+            content: module.content,
+            resources: module.resources || [],
+          }));
+
+          const newSection = new Section({
+            ...section,
+            modules: modulesToSave,
+          });
+
           return newSection.save();
         })
       );
@@ -128,6 +142,7 @@ const resolvers = {
 
       return roadmapToSave.save();
     },
+
     createUpcomingRoadmap: async (root, args, context) => {
       const { title, description, image } = args;
       const currentUser = context.currentUser;
