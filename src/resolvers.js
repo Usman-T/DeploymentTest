@@ -111,7 +111,12 @@ const resolvers = {
         );
       }
 
-      const sectionsToCreate = await Section.insertMany(sections);
+      const sectionsToCreate = await Promise.all(
+        sections.map(async (section) => {
+          const newSection = new Section(section);
+          return newSection.save();
+        })
+      );
 
       const roadmapToSave = new Roadmap({
         title,
@@ -222,12 +227,14 @@ const resolvers = {
         throw new GraphQLError("User is not enrolled in this roadmap");
       }
 
-      const roadmap = await Roadmap.findById(roadmapId);
+      const roadmap = await Roadmap.findById(roadmapId).populate("sections");
       if (!roadmap) {
         throw new GraphQLError("Roadmap not found");
       }
 
-      const sectionExists = roadmap.sections.includes(sectionId);
+      const sectionExists = roadmap.sections.some(
+        (section) => section._id.toString() === sectionId
+      );
       if (!sectionExists) {
         throw new GraphQLError("Section not found in the roadmap");
       }
@@ -237,7 +244,7 @@ const resolvers = {
       }
 
       enrolledRoadmap.completedSections.push(sectionId);
-      user.points = user.points + 10;
+      user.points += 10;
 
       return user.save();
     },
@@ -257,6 +264,9 @@ const resolvers = {
     },
   },
   Roadmap: {
+    id: (root) => root._id.toString(),
+  },
+  Section: {
     id: (root) => root._id.toString(),
   },
 };

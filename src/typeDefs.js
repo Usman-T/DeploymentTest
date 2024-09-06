@@ -12,17 +12,23 @@ type Progress {
   completedSections: [Section]
 }
 
-type Section {
+type Module {
   title: String
-  content: String
+  content: String # Markdown content
+}
+  
+type Section {
+  title: String!
+  description: String! # Markdown content
+  learningObjectives: String # Markdown content
+  modules: [Module]
   images: [String]
-  description: String
   id: ID!
 }
 
 type Roadmap {
   title: String!
-  description: String!
+  description: String! # Markdown content
   image: String!
   sections: [Section]!
   draft: Boolean!
@@ -31,7 +37,7 @@ type Roadmap {
 
 type Upcoming {
   title: String!
-  description: String!
+  description: String! # Markdown content
   image: String!
   id: ID!
 }
@@ -59,14 +65,14 @@ type Mutation {
   ): Token
   createRoadmap(
     title: String!
-    description: String!
+    description: String! # Markdown content
     image: String!
     sections: [SectionInput!]!
     draft: Boolean
   ): Roadmap
   createUpcomingRoadmap(
     title: String!
-    description: String!
+    description: String! # Markdown content
     image: String!
   ): Upcoming
   publishRoadmap(roadmapId: ID!): Roadmap
@@ -78,10 +84,16 @@ type Mutation {
 }
   
 input SectionInput {
+  title: String!
+  modules: [ModuleInput]
+  learningObjectives: String 
+  images: [String]
+  description: String!
+}
+
+input ModuleInput {
   title: String
   content: String
-  images: [String]
-  description: String
 }
 `;
 
