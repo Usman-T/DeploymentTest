@@ -46,11 +46,24 @@ type Token {
   value: String!
 }
 
+type Vote {
+  optionId: ID!
+  count: Int!
+}
+
+type Poll {
+  id: ID!
+  options: [Upcoming!]!
+  votes: [Vote!]!
+}
+
 type Query {
   me: User
   allUsers: [User]
   allRoadmaps(includeDrafts: Boolean): [Roadmap]
   allUpcomingRoadmaps: [Upcoming]
+  getPoll(id: ID!): Poll
+  getAllPolls: [Poll!]!
 }
 
 type Mutation {
@@ -65,14 +78,14 @@ type Mutation {
   ): Token
   createRoadmap(
     title: String!
-    description: String! # Markdown content
+    description: String! 
     image: String!
     sections: [SectionInput!]!
     draft: Boolean
   ): Roadmap
   createUpcomingRoadmap(
     title: String!
-    description: String! # Markdown content
+    description: String! 
     image: String!
   ): Upcoming
   publishRoadmap(roadmapId: ID!): Roadmap
@@ -81,6 +94,13 @@ type Mutation {
     roadmapId: ID!
     sectionId: ID!
   ): User
+  createPoll(
+    title: String!, 
+    description: String, 
+    options: [ID!]!): Poll!
+  castVote(
+    pollId: ID!,
+    optionId: ID!): Poll!
 }
   
 input SectionInput {

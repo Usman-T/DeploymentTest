@@ -3,6 +3,7 @@ const User = require("./models/user");
 const Roadmap = require("./models/roadmap");
 const Section = require("./models/section");
 const Upcoming = require("./models/upcoming");
+const Poll = require("./models/poll");
 const jwt = require("jsonwebtoken");
 const enrolledStudents = require("./enrolled");
 const bcrypt = require("bcryptjs");
@@ -30,6 +31,12 @@ const resolvers = {
     },
     allUpcomingRoadmaps: async () => {
       return Upcoming.find({});
+    },
+    getPoll: async (root, { id }) => {
+      return Poll.findById(id).populate("options");
+    },
+    getAllPolls: async (root, id) => {
+      return Poll.find({}).populate("options");
     },
   },
   Mutation: {
@@ -111,16 +118,13 @@ const resolvers = {
         );
       }
 
-      // Map through sections and save them
       const sectionsToCreate = await Promise.all(
         sections.map(async (section) => {
           const { modules } = section;
 
-          // Save each module to be used inside the section
           const modulesToSave = modules.map((module) => ({
             title: module.title,
             content: module.content,
-            resources: module.resources || [],
           }));
 
           const newSection = new Section({
@@ -263,6 +267,38 @@ const resolvers = {
 
       return user.save();
     },
+    createPoll: async (root, { options }) => {
+      const poll = new Poll({
+        options,
+        votes: options.map((optionId) => ({ optionId, count: 0 })),
+      });
+      
+      return poll.save();
+    },
+    castVote: async (parent, { pollId, optionId }) => {
+      const poll = await Poll.findById(pollId);
+
+      if (!content.curentUser) {
+        throw new GraphQLError("No user found");
+      }
+
+      if (!poll) {
+        throw new GraphQLError("Poll not found");
+      }
+
+      const voteEntry = poll.votes.find(
+        (vote) => vote.optionId.toString() === optionId
+      );
+
+      if (voteEntry) {
+        voteEntry.count += 1;
+      } else {
+        poll.votes.push({ optionId, count: 1 });
+      }
+
+      await poll.save();
+      return Poll.findById(pollId).populate("options");
+    },
   },
   User: {
     id: (root) => root._id.toString(),
@@ -283,6 +319,11 @@ const resolvers = {
   },
   Section: {
     id: (root) => root._id.toString(),
+  },
+  Poll: {
+    options: async (root) => {
+      return Upcoming.find({ _id: { $in: root.options } });
+    },
   },
 };
 
