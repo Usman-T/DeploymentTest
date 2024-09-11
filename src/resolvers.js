@@ -278,7 +278,8 @@ const resolvers = {
     castVote: async (parent, { pollId, optionId }, context) => {
       const poll = await Poll.findById(pollId);
 
-      if (!context.curentUser) {
+            const currentUser = context.currentUser;
+      if (!currentUser) {
         throw new GraphQLError("No user found");
       }
 
