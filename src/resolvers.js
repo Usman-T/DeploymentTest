@@ -39,7 +39,7 @@ const resolvers = {
     getAllPolls: async (root, id) => {
       return Poll.find({}).populate("options");
     },
-    getAllEnrolledUser: async () => {
+    getAllEnrolledUsers: async () => {
       return Enrolled.find({});
     },
   },
