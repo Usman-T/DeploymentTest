@@ -5,7 +5,6 @@ const Section = require("./models/section");
 const Upcoming = require("./models/upcoming");
 const Poll = require("./models/poll");
 const jwt = require("jsonwebtoken");
-const enrolledStudents = require("./enrolled");
 const Enrolled = require("./models/enrolled");
 const bcrypt = require("bcryptjs");
 
