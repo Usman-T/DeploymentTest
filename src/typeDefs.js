@@ -57,6 +57,11 @@ type Poll {
   votes: [Vote!]!
 }
 
+type EnrolledUser {
+  name: String!
+  id: ID!
+}
+
 type Query {
   me: User
   allUsers: [User]
@@ -64,6 +69,7 @@ type Query {
   allUpcomingRoadmaps: [Upcoming]
   getPoll(id: ID!): Poll
   getAllPolls: [Poll!]!
+  getAllEnrolledUsers: [EnrolledUser!]!
 }
 
 type Mutation {
@@ -101,6 +107,9 @@ type Mutation {
   castVote(
     pollId: ID!,
     optionId: ID!): Poll!
+  addEnrolledUser(
+    name: String!
+  ): EnrolledUser
 }
   
 input SectionInput {

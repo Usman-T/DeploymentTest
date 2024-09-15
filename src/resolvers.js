@@ -6,6 +6,7 @@ const Upcoming = require("./models/upcoming");
 const Poll = require("./models/poll");
 const jwt = require("jsonwebtoken");
 const enrolledStudents = require("./enrolled");
+const Enrolled = require("./models/enrolled");
 const bcrypt = require("bcryptjs");
 
 const resolvers = {
@@ -38,6 +39,9 @@ const resolvers = {
     getAllPolls: async (root, id) => {
       return Poll.find({}).populate("options");
     },
+    getAllEnrolledUser: async () => {
+      return Enrolled.find({});
+    },
   },
   Mutation: {
     createUser: async (root, args) => {
@@ -52,7 +56,9 @@ const resolvers = {
         throw new GraphQLError("Username already exists");
       }
 
-      if (enrolledStudents.includes(username)) {
+      const isEnrolled = await Enrolled.findOne({ name: username });
+
+      if (isEnrolled) {
         const saltRounds = 10;
         const passwordHash = await bcrypt.hash(password, saltRounds);
 
@@ -272,13 +278,13 @@ const resolvers = {
         options,
         votes: options.map((optionId) => ({ optionId, count: 0 })),
       });
-      
+
       return poll.save();
     },
-    castVote: async (parent, { pollId, optionId }, context) => {
+    castVote: async (root, { pollId, optionId }, context) => {
       const poll = await Poll.findById(pollId);
 
-            const currentUser = context.currentUser;
+      const currentUser = context.currentUser;
       if (!currentUser) {
         throw new GraphQLError("No user found");
       }
@@ -299,6 +305,20 @@ const resolvers = {
 
       await poll.save();
       return Poll.findById(pollId).populate("options");
+    },
+    addEnrolledUser: async (root, { name }) => {
+      if (!name) {
+        throw new GraphQLError("Username for the enrolled user must be given");
+      }
+      const userExists = await Enrolled.findOne({ name });
+
+      if (userExists) {
+        throw new GraphQLError("User is already in list");
+      }
+
+      const enrolled = new Enrolled({ name });
+
+      return enrolled.save();
     },
   },
   User: {
